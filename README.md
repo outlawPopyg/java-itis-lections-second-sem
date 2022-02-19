@@ -58,3 +58,64 @@ public class Game {
  В нашем случае `classpath` - `bin`
 
  запуск Game: `java -classpath bin game.Game`
+
+## Generics
+### Ограничения:
+ - new T(), new T[] - нельзя
+ - нельзя делать inctanceof для параметра
+ - нельзя делать static поле типа T
+ - нельзя перегрузить методы двумя классами с разными параметрами
+ 	void print(List<String> c) и void print(List<Integer> c) - нельзя
+ - В коллекциях должны быть объекты - нельзя примитивы
+
+### Неизвестный тип (Wildcard):
+Нам нужно объявить метод, принимающий параметризованный класс, но параметр нам неизвестен
+
+```java
+public class Printer {
+ 	public void print(List<...> elements) {
+ 		//..
+ 	}
+}
+``` 
+
+Что же написать вместо <...>:
+ - List<T> нельзя, т.к неизвестно что такое T
+ - List - явная заточенность под Object - а если есть специфика?
+ - ?
+
+```java
+public class Printer {
+ 	public void print(List<?> elements) {
+ 		//..
+ 	}
+}
+```
+### Ковариантность и контрвариантность
+```java
+public static void copy(List<? super Number> dest, List<? extends Number> src) {
+    for (int i = 0; i < src.size(); i++) {
+        dest.set(i, src.get(i));
+    }
+}
+```
+- src - должен содержать числа, поэтому extends Number - `ковариантность`
+- dest - принимает числа ( но может быть и более общего типа) - поэтому `контрвариантность`
+Если захотим написать вместо super - extends `void copy(List<? extends Number> dest, List<? extends Number> src)`,
+то столкнемся с ошибкой. Ведь может быть такое что, в лист Integer присваивается значения листа, содержащие Double.
+
+`Ковариантность` (extends)- перенос наследования исходных типов на производные от них типы в прямом порядке. (мы можем добавить какие-то методы, которых нет = наследование).
+```java
+List<Integer> ints = new ArrayList<>();
+List<? extends Number> nums = list;
+```
+`List<Integer> подтип List<? extends Number>`
+<b>
+`Контравариантность` (super)- перенос наследования исходных типов на производные от них типы в обратном порядке.
+```java
+List<Number> nums = new ArrayList<>();
+List<? super Integer> ints = new ArrayList<>();
+ints = nums; // можно, он не наоборот
+```
+`List<Number> подтип List<? super Integer>`
+
