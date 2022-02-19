@@ -109,7 +109,7 @@ public static void copy(List<? super Number> dest, List<? extends Number> src) {
 List<Integer> ints = new ArrayList<>();
 List<? extends Number> nums = list;
 ```
-`List<Integer> подтип List<? extends Number>` <b>
+`List<Integer> подтип List<? extends Number>`  
 `Контравариантность` (super)- перенос наследования исходных типов на производные от них типы в обратном порядке.
 ```java
 List<Number> nums = new ArrayList<>();
