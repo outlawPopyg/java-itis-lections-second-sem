@@ -1,7 +1,6 @@
 # Лекции по Java 2 семестр
-
 ## Пакеты
-### import
+### import  
 import - не рекурсивная операция  
 import static - импорт статических методов. Например import static java.lang.Math.cos  
 ---
@@ -225,3 +224,59 @@ abstract class MyCollection<T> implements Collection<T> {
 ### LinkedList (class)
   - Реализует List
   - Реализует Queue, Deque
+
+## Iterator
+Цикл for each - синтаксический сахар для использования итератора.
+Цикл for each внтури своей реализации использует методы итератора.  
+Коллекции имплементят Iterable<T>.
+```text
+ArrayList<Student> students = new ArrayList<>();
+Iterator<Student> i = students.iterator();
+while (i.hasNext()) {
+    System.out.println(i.next());
+}
+```
+Любой вызов next() - переход к след элементу.  
+## Comparable<T>
+Интерфейс из java.util, который позволяет сравнивать объекты класса которые реализуют
+его с другими объектами.
+```java
+class A implements Comparable<T> {
+    @Override
+    public int compareTo(T anotherObject) {
+        return 0;
+    }
+}
+```
+## Comparator<T>
+Сторонний объект умеющий сравнивать два объекта. Аналог: весы.
+```java
+class StudentComparator implements Comparator<Student> {
+    public int compareTo(Student s1, Student s2) {
+        return (s1.getAge() - s2.getAge());
+    }
+}
+
+// Collections.sort(students, new StudentComparator());
+```
+Очередь с приоритетами
+```text
+PriorityQueue<Student> strings = new PriorityQueue<>(new Comparator<String>() {
+        @Override
+        public int compare(Student s1, student s2) {
+            return s1.getAge() - s2.getAge();
+        }
+    });
+```
+## Stream API
+Конвейерные операции
+ - map, filter
+ - distinct
+ - sorted
+ - mapToInt,mapToDouble...
+Терминальные
+ - findFirst
+ - collect
+ - forEach
+ - reduce
+Терминальные возвращают Optional<T>
