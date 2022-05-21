@@ -1,6 +1,6 @@
 # Лекции по Java 2 семестр
 ## Пакеты
-### import  
+  
 import - не рекурсивная операция  
 import static - импорт статических методов. Например import static java.lang.Math.cos  
 ---
@@ -269,14 +269,192 @@ PriorityQueue<Student> strings = new PriorityQueue<>(new Comparator<String>() {
     });
 ```
 ## Stream API
-Конвейерные операции
+### Конвейерные операции
  - map, filter
  - distinct
  - sorted
- - mapToInt,mapToDouble...
-Терминальные
+ - mapToInt,mapToDouble...  
+### Терминальные
  - findFirst
  - collect
  - forEach
- - reduce
+ - reduce  
 Терминальные возвращают Optional<T>
+## Unit-тестирование(модульное)
+ Процесс проверки работоспособности отдельных частей исходного кода
+ (чаще всего методов) программы путем запуска тестов в исскуственной
+ среде. **Осуществляется разработчиком!**
+ ### Test case
+Артефакт, описывающий список конкретных шагов, условий и параметров, необходимых
+для проверки реализации тестируемой функции или ее части.  
+Под кейсом понимается структура вида: Action > Expected Result > Test Result  
+Модульное тестирвание нужно для:
+ - Ошибки выявляются в процессе проектирование метода или класса(TDD)
+ - Разработчик создает методы и классы для конкретных целей
+ - Снижается количесво новых ошибок при добавлении новой функц-ти
+ - Тест отражает элементы технического задания (некорректное завершение
+теста сообщает о нарушении технических требований заказчика)
+### Как называть тесты
+ - суффикс Test к названии класса(если тесты сгруппированы в классе)
+ - суффикс test к ф-ям/методам, если того требует библиотека
+ - тестовые методы желательно должны содержать should (sumShouldBePositive)
+### Что такое assert
+ Проверка ожидание/реальность
+ - assertTrue
+ - assertFalse
+ - assertEquals
+ - assertArrayEquals
+ - assertNotEquals
+ - assertSame
+ - assertNotSame
+ - fail - гарантированное падение теста
+### Покрытие
+ - процент кода(строк, методов, классов), покрытого тестами.
+ - а так же сами эти тесты
+### TDD
+ 1. Пишем простейший тест, ломающий программу
+ 2. Пишем простейшую реализацию, достаточную для прохождения теста
+ 3. Улучшаем написанный код, не ломая тесты. Возвращаемся к пункту 1.
+### Expected, Timeout
+ ```java
+class Test {
+    @Test(expected = ArithmeticException.class)
+    public void checkZeroDivide() {
+        // проверяем исключение делением на ноль
+        Math.divide(1, 0);
+    }
+
+    // останавливаем когда проходит 100мс
+    @Test(timeout = 100)
+    public void waitMe() {
+        while (true) ;
+    }
+    
+    // если исключений не одно
+    @Test
+    public void checkZero() {
+        // проверяем искл при делении на ноль
+        try {
+            Math.divide(1,0);
+            Assert.fail();
+        } catch (ArithmeticException e) {}
+        catch (NullPointerException e) {}
+        catch (Exception e) {
+            throw new AssertionError();
+        }
+        
+    }
+}
+```
+### Ignore, Assume
+ - Тест, помеченный @Ignore не выполняется 
+ - Вместо Assert можно использовать Assume(assumeEquals, ...)
+   + Если проверка верна - тест пройден
+   + Если не верна - тест игнорируется
+ 
+### Fixture
+Окружение, необходимое для корректной работы теста.(Объекты, БД, файлы)
+ * setUpClass / setUpBeforeClass / @beforeClass - запускается только один раз при запуске теста(static).
+ * setUp / setUpClass / @Before - запускается перед каждым тестовым методом
+ * tearDown / tearDownClass / @After - запускается после каждого метода.
+ * tearDownAfterClass / tearDownClass / @AfterClass - запускается после того, как отработали все тестовые методы
+### Жизненный цикл тестирующего класса
+ * setUp / beforeClass
+ * для каждого @Test-метода:
+   + создание экземпляра тестового класса
+   + выполняется  setUp / Before
+   + выполняется test
+   + выполняется tearDown / After
+ * Выполняется TearDownAfterClass
+```java
+// JUnit 3
+public class TestPlayer extends TestCase {
+    Player p1;
+    
+    public static void setUpBeforeClass() {
+        p1 = new Player("Kalim");
+    }
+    
+    public void testHpShouldBe100() {
+        Assert.assertEquals(100, p1.getHP());
+    }
+    
+}
+```
+### Mock
+ - Создание: Класс объект = mock(Класс.class)
+ - Задание поведения: when(объект.метод(параметры)).thenResult(значение)
+
+```java
+import java.io.InputStream;
+
+import static org.mockito.Mocktio.mock;
+import static org.mockito.Mocktio.when;
+
+class MockClass {
+    public static void main(String[] args) {
+        InputStream is = mock(InputStream.class);
+        when(is.read()).thenResult(5);
+        
+        // имитация того как будто мы считываем файл, в котором одни пятерки
+        // всегда будет возвращаться 5
+        System.out.println(is.read()); // 5
+        System.out.println(is.read()); // 5
+        // что-то не определено -> возвращать 0 или null
+        System.out.println(is.available()); // 0
+    }
+}
+```
+
+```java
+import java.io.InputStream;
+
+public class Add {
+    public static int add(InputStream is, int n) {
+        int s = 0;
+        for (int i = 0; i < n; i++) {
+            s += is.read();
+        }
+        return s;
+    }
+}
+
+class MockTest {
+    @Test
+    public void testAdd() {
+        // Чтобы протестировать функцию сложения всех чисел из файла, нужно было
+        // этот файл создать и заполнить. Но это возня.
+        InputStream is = mock(InputStream.class);
+        when(is.read()).thenReturn(5).thenReturn(6);
+        // создаем типо файл в котором при первом счтывании возвр 5 а далее 6
+        // соответсвенно если счситать три раза то будет 5-6-6
+        Assert.assertEquals(Add.add(is, 3), 17);
+    }
+}
+```
+
+### Проверка вызова
+
+```java
+import java.util.Iterator;
+
+class MockTest {
+    public static void main(String[] args) {
+        Iterator i = mock(Iterator.class);
+        when(i.next()).thenReturn("ITIS").thenReturn("KFU");
+        i.next();
+        // Проверка, что был вызван один раз - тест пройден
+        verify(i).next();
+        // Проверка, что два раза - тест завалился
+        virify(i, times(2)).next();
+    }
+}
+```
+Лог ошибки:
+```text
+Wanted 2 times
+But was 1 time
+```
+## IO
+Файл - всегда набор битов (байтов, килобайтов, мегабайтов). У бита 2 возможных значенния,
+поэтому он называется бинарным.
