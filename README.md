@@ -550,3 +550,121 @@ class IOLek {
     }
 }
 ```
+### Паттерн Декоратор
+Когда нужно дать новое поведение **существующему объекту**.  
+А не новое поведение классу/новому объекту. Нужно чтобы новый объект содержал всю
+ту информацию, которую накопил старый объект во время работы. А если мы сделаем это
+в видео наследования, то создастся чистый новый объект.  
+Пример:  
+ - A умеет f
+ - B умеет f и g
+
+Цель: сдлеать так, чтобы новый объект b делал f в точности так же как и старый объект а.
+```java
+class A {
+    public void f() {
+        // ...
+    }
+}
+
+class B extends A {
+    private A a; // содержит экземпляр родителя
+    public B(A a) {
+        this.a = a;
+    }
+    
+    public void f() {
+        a.f();
+    }
+    
+    public void g() {
+       // ...
+    }
+    
+}
+```
+Когда вызываем f() у B - он будет работать в точности так же как и f() у A.
+То есть объект B содержит в себе объект A.  
+**Декоратор** умеет существующему объекту давать новое поведение, не стирая старое.
+Можно выполнить с теми же значениями методы родителя.
+### Декораторы IO
+ - Дать существующим IO-объектам новые свойства:
+   + Буферизация
+   + Чтение конкретных типо данных
+   + ...
+ - В Java - надстройка
+
+Пример:
+ Возможность подставлять одни потоки в другие, получая новую функциональность
+```text
+new DataInputStream(
+    new BufferedInputStream(
+        new FileInputStream("input.txt")
+    )
+)
+Buffered - поддержка буферизации
+DataInput - возможность читать примитивы
+```
+### Буферизованные потоки
+Это история про сокращение количества опреаций прямого считывания и прямой записи,
+где источник файлов или приемник файлов находится. Сократить кол-во обращений к
+источнику данных (InputStream) или к тому кто данные получает (OutputStream).
+![image](C:\work\java-itis-lections-sem-2\buffered.png)
+![image](C:\work\java-itis-lections-sem-2\datainput.png)
+### Random Access Files
+ - Наслденик как DataInputStream и DataOutputStream
+   + "r" for read-only access
+   + "rw" for read and write access. Java does not support only write access.For example
+ - RandomAccessFile raf = new RandomAccessFile("29.html", "r")
+ - методы getFilePointer() - current position,length(), seek()- перемещение на поз.
+   + seek на большую позицию чем длина - перемещение в конец
+   + запись в конец файла расширяет файл.
+ 
+### READERS/WRITERS
+ - read() - char
+ - write(x), x - char
+
+ + PrintWriter.println()
+ + BufferedReader.readLine()
+
+### Мосты
+ - InputStreamReader - преобразует символьный поток в байтовый 
+ - OutputSteamWriter - преобразует байтовый поток в символьный 
+
+### Паттерн проектирования "Adapter"
+Подменяет все методы старого объекта в виде нового интерфейса для этих методов при
+этом вызывая внутри них методы старого объекта
+```java
+// Adaptee 
+class Lamp {
+    public void on() { 
+       //...
+    }
+    public void off() { 
+       //...
+    }
+}
+
+// Adapter
+class SmartLampForDevice {
+    private Lamp lamp;
+    public SmartLampForDevice(Lamp lamp) {
+        this.lamp = lamp;
+    }
+    
+    public void start() { lamp.on(); }
+    public void stop() { lamp.off(); }
+}
+
+class SmartDevice {
+    SmartLampForDevice slfd;
+    public work() {
+        slfd.start();
+        slfd.stop();
+    }
+}
+```
+### Сериализация
+Задача превращения объекта в данные и данные в объект.
+ - **Сериализация** - запись объекта в поток
+ - **Десериализация**  - чтение объекта из потока
