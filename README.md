@@ -455,5 +455,98 @@ Wanted 2 times
 But was 1 time
 ```
 ## IO
-Файл - всегда набор битов (байтов, килобайтов, мегабайтов). У бита 2 возможных значенния,
-поэтому он называется бинарным.
+**Файл** - всегда набор битов (байтов, килобайтов, мегабайтов). У бита 2 возможных значенния,
+поэтому он называется бинарным.  
+**Текстовый файл** - бинарный файл, который при считывании байтов возвращает символы.
+Может быть прочитан человеком.
+### Почему не все файлы текстовые
+Для экономии памяти. 65 и 66 - байты. Получается 2 байта. Но если записать в текстовом
+виде `65 66` - уже 5 байтов.  
+Еще можно считывать с:
+ - консоль
+ - сеть
+ - устройство
+ - структура данных
+
+Современный подход к вводу/выводу: есть **объекты** которые работая с разными источниками
+данных(файл, сеть, структура) имеют общий интерфейс(источник данных может поменяться
+но это никак не повлияет на код). Эти объекты называются Streams(input/output).
+### Streams(input/output)
+Как работать:
+ - Открыть поток
+ - Пока есть информация, читать с него или записать
+ - Закрыть поток
+ 
+### java.io
+ - InputStream - входной поток
+    + read()
+ - OutputSteam - выходной поток
+    + write()
+    
+### Тонкости read()
+ + Метод read() считывает один байт и превращает его в int
+    * Делается это потому что, байты джавовские да и не только первым битом 
+   хранят фактор что это отрицательное или положительное число. 
+   И поэтому при считывании нам было бы необходимо конвертировать отрицательный байт
+   в положительный инт, который потом уже сконвертирвать, например в символ. И чтобы этим не заниматься возвр инт.
+ 
+```java
+class IOLek {
+    public static void main(String[] args) {
+        echo(System.in);
+    }
+
+    public static void echo(InputStream in) {
+        try {
+            int x = in.read();
+            while (x != -1) {
+                System.out.print((char) x);
+                x = in.read();
+            }
+        } catch (IOException e) {
+            System.err.println(e.getMessage());
+        }
+        System.out.println();
+    }
+}
+```
+Чтение нескольких байтов сразу
+```text
+public int read(byte[] b)
+public int read(byte[] b, int offset, int length)
+b[offset] - начиная с какого элемента идет запись в массив
+length - сколько байтов считать
+```
+### Откуда можно прочитать данные
+Так и называется соответствующий InputStream
+ - ByteArrayInputStream
+ - FileInputStream
+ - StringBufferInputStream
+ - PipedInputStream(в связке с OutputInputStream)
+    + Что записали в PipedOutput, то будет доступно в PipedInput
+    + PipedOutputStream po = new PipedOutputSteam();
+    + PipedInputStream pi = new PipedInputStream(po);
+ 
+```java
+import java.io.*;
+import java.util.*;
+
+class IOLek {
+    public static void main(String[] args) {
+        fisDemo();
+    }
+    
+    public static void fisDemo() {
+        try {
+            FileInputStream fis = new FileInputStream("test.txt");
+            int i;
+            while ( (i = fis.read()) != -1) {
+                System.out.println((char)i);
+            }
+            fis.close();
+        } catch (IOException e) {
+            System.out.println("Exception");
+        }
+    }
+}
+```
