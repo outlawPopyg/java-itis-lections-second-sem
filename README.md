@@ -668,3 +668,271 @@ class SmartDevice {
 Задача превращения объекта в данные и данные в объект.
  - **Сериализация** - запись объекта в поток
  - **Десериализация**  - чтение объекта из потока
+
+## Multitasking
+Цель: обеспечить независиммое и одновременное выполнение нескольких программ
+(ничего общего с ускорением)
+### Виртуальная параллельность
+ - Можно читать 3 книги одну за другой
+   + это последовательное выполнение
+ - Можно читать по несколько страниц одной, затем переходя к другой. В итоге
+   через некоторое время все три книги будут прочитаны примерно на одинаковое кол-во
+   страниц
+   + это вритуальная параллельность ( время работы между переключениями называется тиком)
+ 
+### Thread
+Блок кода, который может выполняться параллельно с другими такими же потоками
+в рамках одного процесса, программы или приложения. **Процесс** - это штука более менее
+изолированная независиммая собственным адресным пространством. **Поток** - часть программы
+которая выполняется внутри параллельно с другими такими же потоками, имея общие данные
+и прочее.  
+В любом приложении есть хотя бы один поток и это main.
+### Как работтают потоки
+ - N потоков
+ - В каждый момент времени работате один поток, остальные стоят
+   + "активный поток", "поток перехватил управление"
+ - Переключение между потоками (передача управления) происходит _незаметно быстро_ и в общем случае _неупорядоченно_
+
+### Потоки и процессы
+ - Поток != Процесс (процесс - уже запущенное приложение)
+ - Поток легче - его использование менее затратно
+ - 1 процесс может содержать несколько потоков
+   + 1 программа внутри себя хочет многозадачности
+      * Печать + набор текста
+      * Печать + проверка синтаксиса
+ 
+### Жизненный цикл потока
+**ПОТОК РАБОТАЕТ ОДИН РАЗ**  
+ - Создан, он не запущен
+ - Запущен (isAlive = true)
+ - Приостановлен
+   + например, во время методов sleep, join, wait
+ - Закончил работу (isAlive = false)
+### Реализация
+ Самое главное - реализовать метод run()
+ 
+```java
+// Thread - в java.lang
+public class MyThread extends Thread {
+    public void run() {
+        for (int i = 0; i < 100; i++) {
+           System.out.println(i);
+        }
+    }
+}
+```
+### Запуск потока
+в дргуом месте, не в классе потока!  
+```text
+// это создание потока
+MyThread t1 = new MyThread();
+// это запуск потока
+t1.start();
+```
+### Не путать run() и start()
+ - run() - описывает поведение при запуске потока
+ - start() - запускает поток с поведением, описанным в run()
+
+sleep() - отправляет текущий поток в ожидание на время => управление передается
+другому потоку, и тд.
+```java
+class MyThread extends Thread {
+    public void run() {
+        for (int i = 0; i < 10; i++) {
+            System.out.println(getName() + ": " + i);
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+}
+
+class ThreadLek {
+    public static void main(String[] args) {
+        (new MyThread()).start();
+        (new MyThread()).start();
+        (new MyThread()).start();
+
+    }
+}
+```
+
+```java
+class MyThread extends Thread {
+    private int s = 0;
+    public int getS() { return s; }
+    public void run() {
+        for (int i = 0; i < 50; i++) {
+            s += i;
+        }
+    }
+}
+
+class ThreadLek {
+    public static void main(String[] args) {
+        MyThread t1 = new MyThread();
+        t1.start();
+        int s = t1.getS();
+        System.out.println(s); // => 0
+    }
+}
+```
+### join()
+Если main вызывает join() у t1, то пока t1 работу не закончит, main работу не
+продолжит
+```java
+class ThreadLek {
+    public static void main(String[] args) throws InterruptedException {
+        MyThread t1 = new MyThread();
+        t1.start();
+        t1.join();
+        int s = t1.getS();
+        System.out.println(s);
+    }
+}
+```
+
+### Runnable
+
+```java
+class MyThread implements Runnable {
+   public void run() {
+        // ...
+   }
+}
+
+public class Main {
+   public static void main(String[] args) {
+      Thread t = new Thread(() -> {
+          for (int i = 0; i < 10; i++) {
+             // ...
+          }
+      });
+      t.start();
+   }
+}
+```
+Но зачем полльзователю нашего класса MyThread2 знать тонкости про то,
+как запускать поток через Runnable? И теперь все потоки - Thread, даже с разным
+поведением?  
+Есть решение:  
+```java
+// Прячем Thread в Runnable
+class MyAwesomeThread implements Runnable {
+    private Thread thread;
+    public MyAwesomeTread() {
+       // создаем поток, передавая поведение нашего MyAwesomeThread
+        thread = new Thread(this);
+        thread.start();
+    }
+    
+    public void run() {
+        // ...
+    }
+}
+
+public class Main {
+   public static void main(String[] args) {
+      MyAwesomeThread thread = new MyAwesomeThread();
+      // поток создается и сразу запускается 
+   }
+}
+```
+
+```java
+import java.io.*;
+import java.util.*;
+
+class BonusCard {
+    private int bonuses;
+    public int getBonuses() { return bonuses; }
+
+    public BonusCard(int bonuses) {
+        this.bonuses = bonuses;
+    }
+
+    public boolean use(int n) {
+        if (bonuses >= n) {
+            bonuses -= n;
+            System.out.println(bonuses + " left");
+            return true;
+        } else {
+            System.out.println("OOOOPS");
+            return false;
+        }
+    }
+}
+
+class Human extends Thread {
+    private BonusCard bonusCard;
+    private String who;
+
+    public Human(BonusCard bonusCard, String who) {
+        this.bonusCard = bonusCard;
+        this.who = who;
+    }
+
+    public void shoppingWithBonuses(int bonuses) {
+        if (bonusCard.getBonuses() >= bonuses) {
+            System.out.println(who + " is gonna buy something");
+            if (bonusCard.use(bonuses))
+                System.out.println(who + " bought something");
+        } else {
+            System.out.println("Sorry, no money");
+        }
+    }
+
+    @Override
+    public void run() {
+        for (int i = 0; i < 100; i++) {
+            shoppingWithBonuses(7);
+        }
+    }
+}
+
+public class Lek {
+    public static void main(String[] args) {
+        BonusCard bc = new BonusCard(150);
+        Human husband = new Human(bc, "husband");
+        Human wife = new Human(bc, "wife");
+        husband.start();
+        wife.start();
+    }
+}
+```
+### Синхронизация
+ - Один поток берет объект в единоличное использование (блокирует доступ к объекту)
+ - Все остальные потоки ждут, пока он не отпустит блокировку
+ - В нашем примере - поток(муж или жена) должен синхронизировать использование бонуса, чтобы дргуой поток не встревал между узнаванием баланса и использованием.
+
+### Монитор
+Объект обеспечивающий синхронизацию(пускаю по одному)
+### Синхронизация объекта
+Первый поток, который придет сюда - встретит synchronized скажет - все я имею доступ
+единолично к объекту bonusCard и пошел с ним работать, а другие объекты, которые
+пришли в этот же блок будут ждать пока 1 поток не перестанет работать с этим блоком от
+открывающейся скобки до закрывающейся. Когда 1 поток закончит опять будет розыгрыш
+кто дальше будет работать с объектом
+```java
+public void shoppingWithBonuses(int bonuses) {
+  synchronized (bonusCard) {
+      if (bonusCard.getBonuses() >= bonuses) {
+          System.out.println(who + " is gonna buy something");
+          if (bonusCard.use(bonuses))
+              System.out.println(who + " bought something");
+      } else {
+          System.out.println("Sorry, no money");
+      }
+  }
+}
+```
+### Синхронизация метода
+Если весь функционал, который надо синхронизировать находится в одном методе,
+то можно весь метод сдлеть синхронизированным с помощью модификатора synchronized.
+### Thread Safety
+ - Код потокобезопасен, если он корректно функционирует при одновременном использовании
+   его в нескольких потоках
+
+![](C:\work\java-itis-lections-sem-2\deadlock.png)
