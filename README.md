@@ -609,8 +609,8 @@ DataInput - возможность читать примитивы
 Это история про сокращение количества опреаций прямого считывания и прямой записи,
 где источник файлов или приемник файлов находится. Сократить кол-во обращений к
 источнику данных (InputStream) или к тому кто данные получает (OutputStream).
-![image](C:\work\java-itis-lections-sem-2\buffered.png)
-![image](C:\work\java-itis-lections-sem-2\datainput.png)
+![image](buffered.png)
+![image](datainput.png)
 ### Random Access Files
  - Наслденик как DataInputStream и DataOutputStream
    + "r" for read-only access
@@ -935,4 +935,4 @@ public void shoppingWithBonuses(int bonuses) {
  - Код потокобезопасен, если он корректно функционирует при одновременном использовании
    его в нескольких потоках
 
-![](C:\work\java-itis-lections-sem-2\deadlock.png)
+![](deadlock.png)
