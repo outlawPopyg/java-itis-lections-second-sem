@@ -1113,3 +1113,150 @@ public class Lek {
 У метода
 
  - invoke() - вызов метода
+
+```java
+public class Lek {
+    public static void main(String[] args) throws ClassNotFoundException, InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+        Scanner sc = new Scanner(System.in);
+        Class cv1 = Class.forName(sc.next()); // у какого класса
+        Class cv2 = Class.forName(sc.next()); // аргумент
+        String methodName = sc.next();
+        Method method = cv1.getMethod(methodName, cv2);
+        Object o1 = cv1.newInstance();
+        Object o2 = cv2.newInstance();
+        // вызываю у o1 метод method (с именем methodName) на объекте o2
+        method.invoke(o1, o2);
+    }
+
+}
+```
+Работает если:
+
+ - java.util.HashSet java.lang.Integer add
+   + т.к в HashSet есть add(Object)
+ - java.lang.Thread java.lang.Stream setName
+   + т.к в java.lang.Thread есть setName(String)
+
+```java
+abstract class EvilGuy {
+    public abstract void attack();
+}
+
+class EvilKnight extends EvilGuy {
+    public void attack() {
+       System.out.println("-10 hp");
+    }
+}
+
+class EvilShooter extends EvilGuy {
+    public void attack() {
+       System.out.println("-20");
+    }
+}
+
+public class Lek9 {
+   public static void main(String[] args) {
+      // сюда может попасть любой EvilGuy, но мы знаем что точно evilguy
+      // работой этого кода  можно управлять извне, без необходимости перекомпилировать его
+      String name = args[0]; 
+      Class<EvilGuy> c = Class.forName(name);
+      EvilGuy eg = c.newInstance();
+      eg.attack();
+   }
+}
+```
+### IMPORTANT
+Я могу управлять работой программ гибко, на разных классах, не переписывая их и не компилируя 
+каждый раз заново! Это легло в основу многих java-фреймворков.
+
+## Аннотации
+### Метаданные
+ - Не влияют на непосредственную работу программы
+ - Но могут быть выявлены другими программами на этапе компилирования или разработки, которые при этом
+скорректируют свою работу.
+
+```java
+class A {
+    public void f() {}
+}
+
+class B extends A {
+    @Override
+    public void f() {} // переопределяем
+}
+
+class C extends A {
+    @Override // тут оверрайд скажет нам что мы не переопределяем метод и не даст скомпилировать
+    public void f(int x) {} // перегружаем
+}
+```
+Просходит путем сравнения сигнатур у текущего класса и родитля с помощью рефлексии.  
+Override - аннотация (метаданные).
+Про **Аннотации**
+
+ - Не влияют на работу кода но могут быть обнаружены другими средствами
+ - Могут быть аннотированы класс, метод, параметр, атрибут и т.д
+
+### Создание аннотаций
+Реализация  
+`@interface MyAnno {}`  
+Использование  
+```text
+@MyAnno
+class MyClass {
+    ...
+}
+```
+### Методы-члены аннотации
+ - Объявляются как методы
+
+```text
+@interface Author {
+    String name();
+    int year() default 2000; // дефолтное значение
+}
+```
+
+ - Но используются как поля
+
+```text
+@Author(name="Kalim", year=2003)
+class MyClass {
+    ...
+}
+```
+
+### Аннотации, аннотирующие аннотации
+@Retention - политика удержания аноотации(до какого этапа компилироания или выполнения аннотация видна).  
+Значения лежат в перечислении RetentionPolicy:  
+ - SOURCE - отбрасывается при компиляции
+ - CLASS - сохр в байт-коде, но недоступны во время работы
+ - RUNTIME - сохр в байт-коде и доступны во время работы
+
+@Target - к чему может быть применена аннотация? Значения - из перечисления ElementType
+ - FIELD
+ - METHOD
+ - TYPE - класс интерфейс перечисление
+ - ...
+
+Может применяться к нескольким: @Target({ElementType.TYPE, ElementType.METHOD })
+```text
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+@interface Author {
+    String name();
+    int year() default 2000;
+}
+```
+
+### Проверка аннотаций через рефлексию
+```text
+// Проверяем что вектор аннотирован @Author
+Class cv = Vector2D.class;
+Annotation[] annotations = cv.getAnnotations();
+for (Annotation annotation : annotations) {
+    if (annotation instanceof Author) {
+        ...
+    }
+}
+```
