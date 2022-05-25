@@ -936,3 +936,180 @@ public void shoppingWithBonuses(int bonuses) {
    его в нескольких потоках
 
 ![](deadlock.png)
+
+### Модель Produces-Consumer
+ - Producer - производит некоторое действие, результатом которого пользуется Consumer
+ - Consumer - забирает произведенные рез-т Producer'a когда он готов
+
+```java
+class Product {
+   private boolean status = false;
+
+   public boolean isReady() {
+      return status;
+   }
+
+   public boolean isUsed() {
+      return !status;
+   }
+
+   public void produce() {
+      // producing
+      this.status = true;
+   }
+
+   public void use() {
+      // using
+      this.status = false;
+   }
+}
+
+class Producer extends Thread {
+   private Product product;
+
+   public Producer(Product p) {
+      this.product = p;
+   }
+
+   public void run() {
+      while (true) {
+          while(!product.isUsed());
+          product.produce();
+      }
+   }
+}
+
+class Consumer extends Thread {
+    private Product product;
+    public Consumer(Product p) {
+        this.product = p;
+    }
+    
+    public void run() {
+        while (true) {
+            while(!product.isReady());
+            product.use();
+        }
+    }
+}
+```
+### Object
+ - wait()
+   + Поток, вызвавший wait(), попадает в список ожидания на этом объекте
+ - notify()
+   + Поток, вызвавший notify,будит из ожидания один из потоков, попавших в список ожидания
+ - notifyAll()
+   + Будит всех. Кто-то захватывает управление.
+ 
+```java
+class Producer extends Thread { // повар
+    // ... 
+   private Product product; // тарелка (с супом)
+   public void run() {
+       while (true) {
+           synchronized (product) {
+               while (!product.isUsed()) { // пока тарелка не пуста 
+                   try {
+                       product.wait(); // повар ждет, когда ему вернут тарелку
+                   } catch (InterruptedException ignored) {}
+               }
+               product.produce(); // варит новый суп
+               product.notify(); // уведомляем что тарелка готова
+           }
+       }
+   }
+}
+```
+
+```java
+class Consumer extends Thread { // тот кто ест суп
+    // ...
+    private Product product;
+    public void run() {
+        while (true) {
+            synchronized (product) {
+                while (!product.isReady()) { // пока суп не готов
+                    try {
+                       product.wait(); // ждет пока суп приготовят
+                    } catch(InterruptedException ignored) {}
+                }
+                product.use(); // ест суп
+                product.notify(); // говорит что съел
+            }
+        }
+    }
+}
+```
+## Reflection
+```java
+class Class {
+    String name;
+    String packageName;
+    List<Attribute> attributeList;
+    List<Method> methodList;
+    // ...
+}
+```
+ - Класс Class - абстракция
+ - А все конкретные реализованные классы (String, User, List, Thread ...) - экземпляры класса Class
+ - Значит все инструменты ООП мы можем применить к самим классам как к сущностям(посмотреть атрибуты,методы,итд).
+   + это и называется рефлексией
+   
+### Как узнать свой класс?
+`Class c = obj.getClass()` - obj - экземпляр класса MyClass.  
+`Class c = MyClass.class`  
+`Class c = Class.forName(org.kfu.UseClass)` - org.kfu.UseClass - полное имя класса.  
+Экземпляры класса, представимого объектом класса Class, можно создавать с помощью
+getInstance():  
+```java
+class MyClass {}
+
+public class Lek {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        String type = sc.next();
+        Class c = Class.forName(type);
+        Object o = c.newInstance(); // тип неизвестен заранее
+        System.out.println(o); // MyClass@10f87f48
+    }
+
+}
+```
+Это тоже классы:  
+ - Method
+ - Filed
+ - Constructor
+ - Annotation
+ - Type
+ - Package
+
+### Получить все методы
+```java
+public class Lek {
+    public static void main(String[] args) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
+        Class str = String.class;
+        Method[] methods = str.getMethods();
+        for (Method method : methods) {
+            System.out.println(method.getName() + " " + method.getReturnType()); // все методы класса String + возвр знчаения
+        }
+    }
+
+}
+```
+Интроспекция - возможность программы исследовать объект во время ее работы.  
+### Declared
+Рефлексия учитывает инкапсуляцию, хотя может и игнорировать ее
+ - getDeclaredMethods(), getDeclaredFields() - возвращает все сущности вне зав-ти от модификатора доступа.
+ - аналогичными методами без Declared возвращают только public-сущности.   
+ 
+### Main action 
+У класса
+
+ - getMethod(...) - возврат метода по сигнатуре(название+список типов параметров)
+   + `String.class.getMethod("charAt", int.class);`
+   + `String.class.getMethod("subString", new Class[] {int.class, int.class});`
+ - getConstructor(...) - возврат конструктора по сигнатуре по аналогии
+
+У метода
+
+ - invoke() - вызов метода
