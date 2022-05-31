@@ -1260,3 +1260,54 @@ for (Annotation annotation : annotations) {
     }
 }
 ```
+
+### Реализация @Override
+```java
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.METHOD)
+@interface MyOverride {}
+
+@interface SomeAnnotation {}
+
+class A {
+    public void f(int a, int b) {}
+}
+
+class B extends A {
+    @MyOverride
+    public void f(int a) {}
+
+    @SomeAnnotation
+    public void g() {}
+
+}
+
+public class Lek {
+   public static void main(String[] args) throws ClassNotFoundException, InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+      Class cv = B.class;
+      Method[] methods = cv.getMethods();
+      for (Method method : methods) {
+         for (Annotation annotation : method.getAnnotations()) {
+            if (annotation instanceof MyOverride) {
+               String methodName = method.getName();
+               Class[] parameters = method.getParameterTypes();
+               Class superClass = cv.getSuperclass();
+               try {
+                  superClass.getMethod(methodName, parameters);
+               } catch (NoSuchMethodException exception) {
+                  System.out.println("Сигнатура не сходится");
+               }
+            }
+         }
+      }
+   }
+}
+
+```
+
+### Вызвать у заданного класса заданный метод без параметров через рефлексию
+```text
+   Class cv = C.class;
+   Object o1 = cv.newInstance();
+   cv.getMethod(methodName).invoke(o1); // вызов у o1 метод methodName()
+```
