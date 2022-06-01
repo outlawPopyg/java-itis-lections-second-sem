@@ -372,6 +372,11 @@ class Test {
     }
 }
 ```
+### Классовые аннотации
+```text
+@DisplayName("A special test case")
+@Disabled("Disabled until bug#10 has been fixed")
+```
 ### Ignore, Assume
  - Тест, помеченный @Ignore не выполняется 
  - Вместо Assert можно использовать Assume(assumeEquals, ...)
@@ -1404,5 +1409,32 @@ public class Lek {
 
         System.out.println(annotation1.city() + " " + annotation1.name());
     }
+}
+```
+
+### Реализация класса "Итератор" для одномерного массива целых чиселt 
+```java
+class ArrayIterator {
+    private int[] arr;
+    private int capacity;
+    private int currentElement;
+
+    public ArrayIterator(int[] arr) {
+        this.arr = arr;
+        this.capacity = arr.length;
+        this.currentElement = 0;
+    }
+
+    public int next() { return arr[currentElement++]; }
+    public boolean hasNext() { return currentElement < capacity; }
+}
+
+public class Lek {
+    public static void main(String[] args) {
+        ArrayIterator iterator = new ArrayIterator(new int[] {1,2,3,4,5});
+        while (iterator.hasNext()) {
+            System.out.println(iterator.next());
+        }
+     }
 }
 ```

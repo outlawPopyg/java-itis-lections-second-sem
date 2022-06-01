@@ -1,22 +1,28 @@
 import java.lang.annotation.*;
 import java.util.Arrays;
 
-@Target(ElementType.TYPE)
-@Retention(RetentionPolicy.RUNTIME)
-@interface RuntimeAnnotation {
-    String name() default "ABC";
-    String city() default "CDE";
+
+
+class ArrayIterator {
+    private int[] arr;
+    private int capacity;
+    private int currentElement;
+
+    public ArrayIterator(int[] arr) {
+        this.arr = arr;
+        this.capacity = arr.length;
+        this.currentElement = 0;
+    }
+
+    public int next() { return arr[currentElement++]; }
+    public boolean hasNext() { return currentElement < capacity; }
 }
-
-
-@RuntimeAnnotation
-class RuntimeAnnotationTestClass {}
 
 public class Lek {
     public static void main(String[] args) {
-        Annotation annotation = RuntimeAnnotationTestClass.class.getAnnotation(RuntimeAnnotation.class);
-        RuntimeAnnotation annotation1 = (RuntimeAnnotation) annotation;
-
-        System.out.println(annotation1.city() + " " + annotation1.name());
-    }
+        ArrayIterator iterator = new ArrayIterator(new int[] {1,2,3,4,5});
+        while (iterator.hasNext()) {
+            System.out.println(iterator.next());
+        }
+     }
 }
