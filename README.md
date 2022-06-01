@@ -639,6 +639,8 @@ DataInput - возможность читать примитивы
 ![image](buffered.png)
 ![image](datainput.png)
 ### Random Access Files
+ - Файл как массив, логика такая же: есть набор данных, есть позиция, можно в любое место ткнуть
+с помощью сик() записать и считать с любой позиции.
  - Наслденик как DataInputStream и DataOutputStream
    + "r" for read-only access
    + "rw" for read and write access. Java does not support only write access.For example
