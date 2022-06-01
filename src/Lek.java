@@ -8,6 +8,7 @@ import java.util.Arrays;
     String city() default "CDE";
 }
 
+
 @RuntimeAnnotation
 class RuntimeAnnotationTestClass {}
 

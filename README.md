@@ -258,6 +258,33 @@ class StudentComparator implements Comparator<Student> {
 
 // Collections.sort(students, new StudentComparator());
 ```
+
+### Отличия Comparable от Comparator
+ - Comparable - используется для сравнения объектов, используя естественный порядок
+   + то есть, допустим у нас есть студенты, которым на физре сказали вытроиться по росту
+   и так впринципе происходит всегда, они по другим критериям не выстраиваются
+   + Comparable как свойство объекта
+ - Comparator -  используется для сравнения объектов, используя НЕ естественный порядок
+   + есть список студентов, который можно отсортировать по разным критериям и здесь выступает
+   Comparator
+   + Comparator скорее как сторонний объект
+
+```text
+  Employee emp1 = new Employee(1, 100, "Kalim", "Ahmetshin");
+  Employee emp2 = new Employee(101, 300, "Ivan", "Petrov");
+  Employee emp3 = new Employee(9, 9000, "Ivan", "Aleksandrov");
+  List<Employee> list = new ArrayList<>();
+  list.add(emp1);
+  list.add(emp2);
+  list.add(emp3);
+  
+  // Если вдруг нам нужно сортировать не как обычно по id, а по именам
+  // так же можно использовать lambda
+  
+  Collections.sort(list, (emp1, emp2) -> emp1.name.compareTo(emp2.name));
+  // или нужно так
+  Collections.sort(list, (emp1, emp2) -> emp1.age.compareTo(emp2.age));
+```
 Очередь с приоритетами
 ```text
 PriorityQueue<Student> strings = new PriorityQueue<>(new Comparator<String>() {
