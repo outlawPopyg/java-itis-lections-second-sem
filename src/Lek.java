@@ -1,41 +1,21 @@
-import java.util.*;
+import java.lang.annotation.*;
+import java.util.Arrays;
 
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+@interface RuntimeAnnotation {
+    String name() default "ABC";
+    String city() default "CDE";
+}
+
+@RuntimeAnnotation
+class RuntimeAnnotationTestClass {}
 
 public class Lek {
-
-    static class Friend {
-        private final String name;
-        public Friend(String name) {
-            this.name = name;
-        }
-        public String getName() { return this.name; }
-
-        public synchronized void bow(Friend bower, int threadNumber) {
-            System.out.println("Поток номер " + threadNumber + " удерживает объект " + this.getName());
-            bower.bowBack(this, threadNumber);
-        }
-
-        public synchronized void bowBack(Friend bower, int threadNumber) {
-            System.out.println("Поток номер " + threadNumber + " удерживает объект " + bower.getName());
-        }
-    }
-
     public static void main(String[] args) {
-        Friend alphonse = new Friend("alphonse");
-        Friend gaston = new Friend("gaston");
+        Annotation annotation = RuntimeAnnotationTestClass.class.getAnnotation(RuntimeAnnotation.class);
+        RuntimeAnnotation annotation1 = (RuntimeAnnotation) annotation;
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                alphonse.bow(gaston, 1);
-            }
-        }).start();
-
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                gaston.bow(alphonse, 2);
-            }
-        }).start();
+        System.out.println(annotation1.city() + " " + annotation1.name());
     }
 }

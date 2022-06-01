@@ -1355,3 +1355,25 @@ public class Lek {
     }
 }
 ```
+
+### Runtime Annotations(Аннотации, которые влияют на Java-код)
+```java
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+@interface RuntimeAnnotation {
+    String name() default "ABC";
+    String city() default "CDE";
+}
+
+@RuntimeAnnotation
+class RuntimeAnnotationTestClass {}
+
+public class Lek {
+    public static void main(String[] args) {
+        Annotation annotation = RuntimeAnnotationTestClass.class.getAnnotation(RuntimeAnnotation.class);
+        RuntimeAnnotation annotation1 = (RuntimeAnnotation) annotation;
+
+        System.out.println(annotation1.city() + " " + annotation1.name());
+    }
+}
+```
