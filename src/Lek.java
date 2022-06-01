@@ -1,57 +1,41 @@
-import java.lang.annotation.*;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.*;
-import java.util.Arrays;
+import java.util.*;
 
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
-@interface MyOverride {}
-
-@interface SomeAnnotation {}
-
-class A {
-    public void f(int a, int b) {}
-}
-
-class B extends A {
-    @MyOverride
-    public void f(int a) {}
-
-    @SomeAnnotation
-    public void g() {}
-
-}
-
-class C {
-    public void f() {
-        System.out.println("invoke");
-    }
-}
 
 public class Lek {
-    public static void main(String[] args) throws ClassNotFoundException, InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
-        Class cv = B.class;
-        Method[] methods = cv.getMethods();
-        for (Method method : methods) {
-            for (Annotation annotation : method.getAnnotations()) {
-                if (annotation instanceof MyOverride) {
-                    String methodName = method.getName();
-                    Class[] parameters = method.getParameterTypes();
-                    Class superClass = cv.getSuperclass();
-                    try {
-                        superClass.getMethod(methodName, parameters);
-                    } catch (NoSuchMethodException exception) {
-                        System.out.println("Сигнатура не сходится");
-                    }
 
-                }
-            }
+    static class Friend {
+        private final String name;
+        public Friend(String name) {
+            this.name = name;
+        }
+        public String getName() { return this.name; }
+
+        public synchronized void bow(Friend bower, int threadNumber) {
+            System.out.println("Поток номер " + threadNumber + " удерживает объект " + this.getName());
+            bower.bowBack(this, threadNumber);
         }
 
-        Class c = C.class;
-        Object o1 = c.newInstance();
-        c.getMethod("f").invoke(o1);
-
+        public synchronized void bowBack(Friend bower, int threadNumber) {
+            System.out.println("Поток номер " + threadNumber + " удерживает объект " + bower.getName());
+        }
     }
 
+    public static void main(String[] args) {
+        Friend alphonse = new Friend("alphonse");
+        Friend gaston = new Friend("gaston");
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                alphonse.bow(gaston, 1);
+            }
+        }).start();
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                gaston.bow(alphonse, 2);
+            }
+        }).start();
+    }
 }
