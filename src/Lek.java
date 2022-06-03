@@ -1,28 +1,34 @@
-import java.lang.annotation.*;
-import java.util.Arrays;
+import java.lang.*;
+import java.util.*;
 
 
-
-class ArrayIterator {
-    private int[] arr;
-    private int capacity;
-    private int currentElement;
-
-    public ArrayIterator(int[] arr) {
-        this.arr = arr;
-        this.capacity = arr.length;
-        this.currentElement = 0;
+class Thread1 extends Thread {
+    LinkedList<Integer> list;
+    public Thread1(LinkedList<Integer> list) {
+        this.list = list;
     }
 
-    public int next() { return arr[currentElement++]; }
-    public boolean hasNext() { return currentElement < capacity; }
+    public void run() {
+        synchronized (list) {
+            for (int i = 0; i < 100000; i++) {
+                list.add(i);
+            }
+        }
+    }
 }
 
+
+
+
+
 public class Lek {
-    public static void main(String[] args) {
-        ArrayIterator iterator = new ArrayIterator(new int[] {1,2,3,4,5});
-        while (iterator.hasNext()) {
-            System.out.println(iterator.next());
-        }
-     }
+    public static void main(String[] args) throws InterruptedException {
+        LinkedList<Integer> list = new LinkedList<>();
+        Thread1 thread1 = new Thread1(list);
+        Thread1 thread2 = new Thread1(list);
+        thread1.start();
+        thread2.start();
+        Thread.sleep(2000);
+        System.out.println(list.size());
+    }
 }
