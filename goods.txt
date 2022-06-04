@@ -1,0 +1,1 @@
+0,Bread,Hlebzavod№3,Kazan	1,Milk,Hlebzavod№3,Kazan	2,Laptop,Lenovo,Dallas	3,Revolver,Colt,NewHanower	4,TV,Sony,WestElizabeth	5,Coffee,Scholfield,NewHanower
