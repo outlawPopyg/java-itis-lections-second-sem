@@ -1,37 +1,37 @@
-import java.util.ArrayList;
-import java.util.List;
 
-class Fruit {}
-class Citrus extends Fruit {
-    int weight;
+
+class Thr extends Thread {
+    int[] arr;
+    int max = 0;
+    int from;
+    int to;
+
+    public Thr(int[] arr, int from, int to) {
+        this.arr = arr;
+        this.from = from;
+        this.to = to;
+    }
+
+    public int getMax() { return max; }
+
+    public void run() {
+        for (int i = from; i < to; i++) {
+            if (arr[i] > max) {
+                max = arr[i];
+            }
+        }
+    }
 }
-class Orange extends Citrus { }
 
 public class Lek {
-
-    public static int totalWeight(ArrayList<? extends Citrus> oranges) {
-        int weight = 0;
-        for (int i = 0; i < oranges.size(); i++) {
-            weight += oranges.get(i).weight;
-        }
-
-//       oranges.add(new Citrus()) ошибка записывать нельзя, потому что вместо ? может быть допустим
-//       Orange, и мы записываем в list потомков предка чего делать нельзя
-//       следовательно из этого листа можео только читать
-        return weight;
-    }
-
-    public static void addOranges(ArrayList<? super Orange> oranges) {
-        for (int i = 0; i < 10; i++) {
-            oranges.add(new Orange());
-        }
-//        Citrus c = oranges.get(0) - нельяз, потому что вместо ? мог бы быть Fruit
-//        и мы бы записали в потомка родителя чего делать нельзя
-//        следовательно этот лист только для записи
-    }
-
-
-    public static void main(String[] args) {
-
+    public static void main(String[] args) throws InterruptedException {
+        int[] arr = new int[] {1, 5, 3, 19, 12, 3};
+        Thr t1 = new Thr(arr, 0, arr.length / 2);
+        Thr t2 = new Thr(arr, arr.length / 2, arr.length - 1);
+        t1.start();
+        t2.start();
+        t1.join();
+        t2.join();
+        System.out.println(Math.max(t1.getMax(), t2.getMax()));
     }
 }
